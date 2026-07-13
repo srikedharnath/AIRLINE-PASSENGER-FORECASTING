@@ -1,1 +1,9 @@
 # AIRLINE-PASSENGER-FORECASTING
+streamlit
+pandas
+numpy
+matplotlib
+plotly
+tensorflow
+scikit-learn
+joblib
