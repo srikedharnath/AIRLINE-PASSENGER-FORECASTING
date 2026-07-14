@@ -52,14 +52,30 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# -------------------------------------------------
+# CACHE FUNCTIONS
+# -------------------------------------------------
 
+@st.cache_data
+def load_dataset():
+    loader = DataLoader("data/airline-passengers.csv")
+    return loader.load_data()
+
+@st.cache_data
+def get_metrics():
+    evaluator = Evaluator()
+    return evaluator.evaluate()
+
+@st.cache_data
+def generate_forecast(months):
+    forecaster = Forecaster()
+    return forecaster.forecast(months)
 
 # -------------------------------------------------
 # LOAD DATA
 # -------------------------------------------------
 
-loader = DataLoader("data/airline-passengers.csv")
-df = loader.load_data()
+df = load_dataset()
 
 # -------------------------------------------------
 # HEADER
@@ -122,22 +138,18 @@ with st.sidebar:
     st.caption("Developed by Tanvi Ganji")
 
 # -------------------------------------------------
-# KPI CARDS
+# MODEL PERFORMANCE
 # -------------------------------------------------
 
 st.subheader("📊 Model Performance")
 
-mae, mse, rmse = Evaluator().evaluate()
-c1,c2,c3 = st.columns(3)
+mae, mse, rmse = get_metrics()
 
-with c1:
-    st.metric("MAE",f"{mae:.2f}")
+c1, c2, c3 = st.columns(3)
 
-with c2:
-    st.metric("MSE",f"{mse:.2f}")
-
-with c3:
-    st.metric("RMSE",f"{rmse:.2f}")
+c1.metric("MAE", f"{mae:.2f}")
+c2.metric("MSE", f"{mse:.2f}")
+c3.metric("RMSE", f"{rmse:.2f}")
 
 st.divider()
 
@@ -152,7 +164,6 @@ left, right = st.columns([1, 2])
 with left:
 
     st.subheader("Dataset")
-
     st.dataframe(df, height=450)
 
 with right:
@@ -181,7 +192,7 @@ with right:
     )
 
     st.plotly_chart(fig, use_container_width=True)
-    
+
 # -------------------------------------------------
 # FORECAST
 # -------------------------------------------------
@@ -189,9 +200,10 @@ with right:
 st.subheader("🔮 Future Forecast")
 
 if run:
+
     with st.spinner("Generating forecast..."):
-        forecaster = Forecaster()
-        future = forecaster.forecast(future_months)
+
+        future = generate_forecast(future_months)
 
     last_date = df.index[-1]
 
@@ -202,18 +214,15 @@ if run:
     )
 
     forecast_df = pd.DataFrame({
-
-        "Month":future_dates,
-
-        "Forecast":future.flatten()
-
+        "Month": future_dates,
+        "Forecast": future.flatten()
     })
 
     st.divider()
 
     st.header("📈 Forecast Results")
 
-    a,b = st.columns([2,1])
+    a, b = st.columns([2, 1])
 
     with a:
 
@@ -251,7 +260,7 @@ if run:
             )
         )
 
-        st.plotly_chart(fig2,use_container_width=True)
+        st.plotly_chart(fig2, use_container_width=True)
 
     with b:
 
@@ -275,11 +284,7 @@ if run:
 st.divider()
 
 st.markdown("""
-
 <center>
-
 Developed using ❤️ Streamlit | TensorFlow | LSTM | Plotly
-
 </center>
-
 """, unsafe_allow_html=True)
